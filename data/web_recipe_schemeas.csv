@@ -1,0 +1,6 @@
+Source,Recipe List,Name,Chef,Ingredients,Instructions,Yield,Dish,Cuisine,Method
+Food Network,"json.loads(soup.find('script', type='application/ld+json').text)[0]",data['name'],data['author'][0]['name'],data['recipeIngredient'],data['recipeInstructions'],data['recipeYield'],data['recipeCategory'],From name,From name
+Bon Appetit,"json.loads(soup.find('script', type='application/ld+json').text)",data['name'],data['author']['name'],data['recipeIngredient'],data['recipeInstructions'],data['recipeYield'],data['recipeCategory'],From name,From name
+Salt & Lav,"json.loads(soup.find('script', type='application/ld+json').text)['@graph'][7]",data['name'],data['author']['name'],data['recipeIngredient'],data['recipeInstructions'],data['recipeYield'],data['recipeCategory'][0],From name,From name
+Delish,"json.loads(soup.find('script', type='application/ld+json').text)",data['name'],data['author']['name'],data['recipeIngredient'],data['recipeInstructions'],data['recipeYield'],data['recipeCategory'][0],From name,From name
+Macheesmo,"json.loads(soup.find_all('script', type='application/ld+json')[1].text)",data['name'],data['author']['name'],data['recipeIngredient'],data['recipeInstructions'],data['recipeYield'],data['recipeCategory'],From name,From name
