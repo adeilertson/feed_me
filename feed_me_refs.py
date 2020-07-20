@@ -30,6 +30,15 @@ method_refs = {
     'slowcooker': 'crock-pot',
 }
 
+# Season references
+season_refs = {
+    'summer': 'summer',
+    'spring': 'spring',
+    'fall': 'fall',
+    'autumn': 'fall',
+    'winter': 'winter',
+}
+
 # Blank recipe
 blank_recipe = {
     'name': '',
