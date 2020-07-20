@@ -14,6 +14,7 @@ from feed_me_refs import (
     dish_refs,
     cuisine_refs,
     method_refs,
+    season_refs,
     blank_recipe
 )
 
@@ -116,6 +117,14 @@ def new_recipe_builder(url, source):
             break
     else:
         new_recipe['method'] = ''
+
+    # Set method based on recipe name
+    for season_var, season_var in season_refs.items():
+        if season_var in new_recipe['name'].lower():
+            new_recipe['season'] = season_var
+            break
+    else:
+        new_recipe['season'] = ''
 
     return(new_recipe)
 
