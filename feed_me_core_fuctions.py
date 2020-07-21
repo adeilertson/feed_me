@@ -44,12 +44,12 @@ def new_recipe_builder(url, source):
     """
     Build new recipe dictionary from compatiable URL.
 
-            Parameters:
-                    url (str): URL of recipe to be converted
-                    source (str): Source of the URL from known sources
+        Parameters:
+                url (str): URL of recipe to be converted
+                source (str): Source of the URL from known sources
 
-            Returns:
-                    new_recipe (dict): Dictionary formatted to be added to recipe list
+        Returns:
+                new_recipe (dict): Dictionary formatted to be added to recipe list
 
     """
 
@@ -174,7 +174,15 @@ def add_recipe(recipes):
         if value in ['', 0, []]:
             entry = input(f'{field.title()} is blank. Enter the {field} for the recipe.\n')
             if field == 'yeild':
-                entry = int(entry)
+                # Yield validation loop
+                yield_check = True
+                while yield_check is True:
+                    try:
+                        entry = int(entry)
+                        yield_check = False
+                    except ValueError:
+                        entry = input('Yield value error. Please enter a number (e.g. 4): ')
+
             elif field == 'instructions':
                 entry = [entry]
             elif field == 'ingredients':

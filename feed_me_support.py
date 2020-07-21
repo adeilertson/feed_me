@@ -20,6 +20,7 @@ def import_recipes():
         data = pickle.load(file)
     return data
 
+
 def screen_reset():
     # Clear screen
     os.system('cls')
