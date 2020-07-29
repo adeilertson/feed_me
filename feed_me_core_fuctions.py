@@ -7,7 +7,8 @@ from feed_me_support import (
     save_obj,
     screen_reset,
     recipe_source,
-    display_recipe
+    display_recipe,
+    set_instructions,
 )
 
 from feed_me_refs import (
@@ -78,10 +79,11 @@ def new_recipe_builder(url, source):
     new_recipe['url'] = url
     # Set recipe ingredients
     new_recipe['ingredients'] = recipe_data['recipeIngredient']
-    # Set recipe instructions
-    new_recipe['instructions'] = recipe_data['recipeInstructions']
     # Set recipe yeild
     new_recipe['yeild'] = recipe_data['recipeYield']
+
+    # Set recipe instructions
+    new_recipe['instructions'] = set_instructions(recipe_data['recipeInstructions'])
 
     # Set recipe chef based on source
     if source == 'food_network':
@@ -172,21 +174,30 @@ def add_recipe(recipes):
     # Prompt user to fill in blank fields
     for field, value in new_recipe.items():
         if value in ['', 0, []]:
-            entry = input(f'{field.title()} is blank. Enter the {field} for the recipe.\n')
+            # Set yield
             if field == 'yeild':
-                # Yield validation loop
-                yield_check = True
-                while yield_check is True:
+                entry = input('Yield is blank. Enter the yield for the recipe (ex. 4).\n')
+                val_check = True
+                while val_check is True:
                     try:
                         entry = int(entry)
-                        yield_check = False
+                        val_check = False
                     except ValueError:
-                        entry = input('Yield value error. Please enter a number (e.g. 4): ')
+                        entry = input('Error. Re-Enter Yield as digits (ex. 4)')
 
+            # Set instructions
             elif field == 'instructions':
-                entry = [entry]
+                text = input('Instructions is blank. Enter the instructions for the recipe separated by at symbols (@).\n')
+                entry = text.split('@')
+
+            # Set ingredients
             elif field == 'ingredients':
-                entry = [entry]
+                text = input('Ingredients is blank. Enter the ingredients for the recipe separated by commas.\n')
+                entry = text.split(',')
+
+            # Set remaining fields with generic message
+            else:
+                entry = input(f'{field.title()} is blank. Enter the {field} for the recipe.\n')
             new_recipe[field] = entry
 
     # Add recipie to master list
