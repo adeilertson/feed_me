@@ -20,6 +20,7 @@ def import_recipes():
         data = pickle.load(file)
     return data
 
+
 def screen_reset():
     # Clear screen
     os.system('cls')
@@ -49,12 +50,22 @@ def recipe_source(url):
 
 
 def display_recipe(recipe):
-    display_ingredients = '\n'.join(recipe['ingredients'])
     print(f"""
 {recipe['name']}
 Author - {recipe['chef']}
 Yeild - {recipe['yeild']}
 
 Ingredients:
-{display_ingredients}
+{[step for step in recipe['instructions']]}
     """)
+
+
+def set_instructions(instr):
+    # Set blank list for instruction entries
+    inst_list = []
+    # Cycle through each entry in web instruction
+    for entry in instr:
+        # Add text value to instruction list
+        inst_list.append(entry['text'])
+    # Return list of instructions
+    return inst_list
