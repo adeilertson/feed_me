@@ -120,7 +120,7 @@ def new_recipe_builder(url, source):
     else:
         new_recipe['method'] = ''
 
-    # Set method based on recipe name
+    # Set season based on recipe name
     for season_var, season_var in season_refs.items():
         if season_var in new_recipe['name'].lower():
             new_recipe['season'] = season_var

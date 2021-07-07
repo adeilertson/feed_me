@@ -1,3 +1,4 @@
+import csv
 import pickle
 import os
 
@@ -69,3 +70,15 @@ def set_instructions(instr):
         inst_list.append(entry['text'])
     # Return list of instructions
     return inst_list
+
+
+def write_cookbook(recipes):
+    # Wrtie entire recipe set to csv file
+
+    # Default output file to current directory
+    filename = 'cookbook.csv'
+    with open(filename, 'w', newline='') as f:
+        fieldnames = recipes[0].keys()
+        writer = csv.DictWriter(f, fieldnames=fieldnames, restval='Missing')
+        for recipe in recipes:
+            writer.writerow(recipe)
