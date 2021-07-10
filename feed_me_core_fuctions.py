@@ -1,3 +1,4 @@
+from json.decoder import JSONDecodeError
 import random
 import requests
 import json
@@ -54,6 +55,9 @@ def new_recipe_builder(url, source):
 
     """
 
+    # Set empty recipe dict
+    new_recipe = {}
+
     # Get page response via requests
     res = requests.get(url)
     # Parse response via beautiful soup
@@ -61,18 +65,28 @@ def new_recipe_builder(url, source):
 
     # Set exact recipe data from data element based on source
     if source == 'food_network':
-        recipe_data = json.loads(soup.find('script', type='application/ld+json').text)[0]
+        try:
+            recipe_data = json.loads(soup.find('script', type='application/ld+json').text)[0]
+        except JSONDecodeError:
+            recipe_data = json.loads(soup.find('script', type='application/ld+json').string)[0]
+        except AttributeError:
+            recipe_data = json.loads(soup.find('script', type='application/json').string)
     elif source == 'salt_and_lavender':
         recipe_data = json.loads(soup.find('script', type='application/ld+json').text)['@graph'][7]
     elif source == 'macheesemo':
         recipe_data = json.loads(soup.find_all('script', type='application/ld+json')[1].text)
     elif source in ['delish', 'bon_appetit']:
-        recipe_data = json.loads(soup.find('script', type='application/ld+json').text)
+        recipe_data = json.loads(soup.find('script', type='application/ld+json').text)  
+
+    # Confirm data is recipe
+    if 'name' not in recipe_data.keys():
+       new_recipe['error'] = 'no_recipe_data'
+       return(new_recipe)
+    else:
+        new_recipe['error'] = ''
 
     # Set recipe items
 
-    # Set empty recipe dict
-    new_recipe = {}
     # Set recipe name
     new_recipe['name'] = recipe_data['name']
     # Set recipe URL
@@ -86,19 +100,19 @@ def new_recipe_builder(url, source):
     new_recipe['instructions'] = set_instructions(recipe_data['recipeInstructions'])
 
     # Set recipe chef based on source
-    if source == 'food_network':
-        # Food Network chef
+    if type(recipe_data['author']) is list:
         new_recipe['chef'] = recipe_data['author'][0]['name']
-    elif source in ['delish', 'salt_and_lavender', 'bon_appetit', 'macheesemo']:
-        # All other defined sources
+    elif type(recipe_data['author']) is dict:
         new_recipe['chef'] = recipe_data['author']['name']
+    else:
+        new_recipe['chef'] = ''
 
     # Set dish type from category based on source
     if 'recipeCategory' in recipe_data.keys():
-        if source in ['food_network', 'bon_appetit', 'macheesemo']:
+        if type(recipe_data['recipeCategory']) is dict:
             if recipe_data['recipeCategory'] in dish_refs.keys():
                 new_recipe['dish'] = dish_refs[recipe_data['recipeCategory']]
-        elif source in ['delish', 'salt_and_lavender']:
+        elif type(recipe_data['recipeCategory']) is list:
             if recipe_data['recipeCategory'][0] in dish_refs.keys():
                 new_recipe['dish'] = dish_refs[recipe_data['recipeCategory'][0]]
     else:
@@ -131,7 +145,7 @@ def new_recipe_builder(url, source):
     return(new_recipe)
 
 
-def add_recipe(recipes):
+def add_recipe(recipes, rec_retry=False):
     # Set empty recipe
     new_recipe = blank_recipe
 
@@ -166,6 +180,20 @@ def add_recipe(recipes):
             # If known source, set all possible fields
             new_recipe = new_recipe_builder(url, source)
 
+    # Bad/Unknown recipie structure URL
+    if new_recipe['error'] == 'no_recipe_data':
+        print('Unable to get recipe from page. Confirm page has recipe data or try manual entry.')
+        retry_url = input('Re-Enter URL? (y/n) ')
+        # Retry URL loop
+        if retry_url not in ['y', 'n']:
+            method = input('Invalid entry. Re-Enter selection: ')
+        
+        # Retry options
+        if retry_url == 'y':
+            add_recipe(recipes, rec_retry=True)
+        elif retry_url == 'n':
+            return None
+
     # Manual/Incomplte URL
 
     # Reset screen
@@ -173,6 +201,8 @@ def add_recipe(recipes):
 
     # Prompt user to fill in blank fields
     for field, value in new_recipe.items():
+        if field == 'error':
+            continue
         if value in ['', 0, []]:
             # Set yield
             if field == 'yeild':
@@ -208,6 +238,11 @@ def add_recipe(recipes):
 
     # Reset screen
     screen_reset()
+
+    # Retry Check
+    # If true, retry URL used to recursivly call function, flag prevents extra add again checks
+    if rec_retry == True:
+        return None
 
     # Add another recipie check
     add_again = input('Would you like to add another recipe? (y/n): ')

@@ -41,6 +41,7 @@ season_refs = {
 
 # Blank recipe
 blank_recipe = {
+    'error': '',
     'name': '',
     'cuisine': '',
     'method': '',
