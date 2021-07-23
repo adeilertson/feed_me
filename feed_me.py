@@ -1,4 +1,10 @@
+"""
+A simple recipie finder and manager.
 
+Allows you to find a recipe from an intial set and add your own either manually
+or through a URL. URLs from several popular recipe sites are processed to
+identify recipie information, with missing information added manually
+"""
 
 from feed_me_support import (
     import_recipes,
