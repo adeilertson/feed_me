@@ -4,24 +4,11 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
-from feed_me_support import (
-    save_obj,
-    screen_reset,
-    recipe_source,
-    display_recipe,
-    set_instructions,
-)
-
-from feed_me_refs import (
-    dish_refs,
-    cuisine_refs,
-    method_refs,
-    season_refs,
-    blank_recipe
-)
+import support
+import references
 
 
-def get_matching_recipes(recipes, name='none', cuisine='none', method='none', dish='none', season='none', ingredients=['none']):
+def get_matching_recipes(recipes, name='none', ingredients=['none']):
     """Return list of recipes matching provided criteria from provided list of recipes"""
 
     return_recipes = []
@@ -29,10 +16,6 @@ def get_matching_recipes(recipes, name='none', cuisine='none', method='none', di
     for recipe in recipes:
         criteria = [
             name in recipe['name'].lower() or name == 'none',
-            cuisine == recipe['cuisine'] or cuisine == 'none',
-            method == recipe['method'] or method == 'none',
-            dish == recipe['dish'] or dish == 'none',
-            season in recipe['season'] or season == 'none',
             any(item.title() in recipe['ingredients'] for item in ingredients) or ingredients == ['none'],
         ]
 
@@ -97,7 +80,7 @@ def new_recipe_builder(url, source):
     new_recipe['yeild'] = recipe_data['recipeYield']
 
     # Set recipe instructions
-    new_recipe['instructions'] = set_instructions(recipe_data['recipeInstructions'])
+    new_recipe['instructions'] = support.set_instructions(recipe_data['recipeInstructions'])
 
     # Set recipe chef based on source
     if type(recipe_data['author']) is list:
@@ -107,50 +90,15 @@ def new_recipe_builder(url, source):
     else:
         new_recipe['chef'] = ''
 
-    # Set dish type from category based on source
-    if 'recipeCategory' in recipe_data.keys():
-        if type(recipe_data['recipeCategory']) is dict:
-            if recipe_data['recipeCategory'] in dish_refs.keys():
-                new_recipe['dish'] = dish_refs[recipe_data['recipeCategory']]
-        elif type(recipe_data['recipeCategory']) is list:
-            if recipe_data['recipeCategory'][0] in dish_refs.keys():
-                new_recipe['dish'] = dish_refs[recipe_data['recipeCategory'][0]]
-    else:
-        new_recipe['dish'] = ''
-
-    # Set cusine based on recipe name
-    for cuisine_var, cuisine_std in cuisine_refs.items():
-        if cuisine_var in new_recipe['name'].lower():
-            new_recipe['cuisine'] = cuisine_std
-            break
-    else:
-        new_recipe['cuisine'] = ''
-
-    # Set method based on recipe name
-    for method_var, method_std in method_refs.items():
-        if method_var in new_recipe['name'].lower():
-            new_recipe['method'] = method_std
-            break
-    else:
-        new_recipe['method'] = ''
-
-    # Set season based on recipe name
-    for season_var, season_var in season_refs.items():
-        if season_var in new_recipe['name'].lower():
-            new_recipe['season'] = season_var
-            break
-    else:
-        new_recipe['season'] = ''
-
     return(new_recipe)
 
 
 def add_recipe(recipes, rec_retry=False):
     # Set empty recipe
-    new_recipe = blank_recipe
+    new_recipe = references.get_blank_recipe()
 
     # Reset screen
-    screen_reset()
+    support.screen_reset()
 
     # Determine method (url or manual)
     method = input("Enter 'url' to add a recipie from a website\nEnter 'manual' to add a recipe yourself:\n").lower()
@@ -159,7 +107,7 @@ def add_recipe(recipes, rec_retry=False):
         method = input('Invalid entry. Re-Enter selection: ')
 
     # Reset screen
-    screen_reset()
+    support.screen_reset()
 
     # URL Processing
     if method == 'url':
@@ -167,12 +115,12 @@ def add_recipe(recipes, rec_retry=False):
         url = input('Enter url to add: ')
 
         # Identify source
-        source = recipe_source(url)
+        source = support.get_recipe_source(url)
 
         # If unkown source revert to manual with option to exit
         if source == 'unknown':
             # Reset screen
-            screen_reset()
+            support.screen_reset()
 
             print('Unkown source')
 
@@ -197,7 +145,7 @@ def add_recipe(recipes, rec_retry=False):
     # Manual/Incomplte URL
 
     # Reset screen
-    screen_reset()
+    support.screen_reset()
 
     # Prompt user to fill in blank fields
     for field, value in new_recipe.items():
@@ -234,10 +182,10 @@ def add_recipe(recipes, rec_retry=False):
     recipes.append(new_recipe)
 
     # Pickle new recipie list
-    save_obj(recipes, 'recipes')
+    support.save_obj(recipes, 'recipes')
 
     # Reset screen
-    screen_reset()
+    support.screen_reset()
 
     # Retry Check
     # If true, retry URL used to recursivly call function, flag prevents extra add again checks
@@ -256,17 +204,13 @@ def add_recipe(recipes, rec_retry=False):
 def find_recipe(recipes):
     search_fields = [
         {'name': 'Name', 'term': 'none'},
-        {'name': 'Cuisine', 'term': 'none'},
-        {'name': 'Method', 'term': 'none'},
-        {'name': 'Dish', 'term': 'none'},
-        {'name': 'Season', 'term': 'none'},
         {'name': 'Ingredients', 'term': 'none'},
     ]
 
     end_message = 'Undefined error.'
 
     # Reset screen
-    screen_reset()
+    support.screen_reset()
 
     # Describe search options
     print('Enter search term for each option. Leave blank and press enter to skip.')
@@ -285,11 +229,7 @@ def find_recipe(recipes):
     eligible_recipies = get_matching_recipes(
         recipes,
         search_fields[0]['term'],
-        search_fields[1]['term'],
-        search_fields[2]['term'],
-        search_fields[3]['term'],
-        search_fields[4]['term'],
-        [search_fields[5]['term']],
+        [search_fields[1]['term']],
     )
 
     # Any result check
@@ -302,7 +242,7 @@ def find_recipe(recipes):
     # Display results
     while match_review is True:
         # Reset screen
-        screen_reset()
+        support.screen_reset()
 
         # Randomly select recipe option
         recipe_option = random.choice(eligible_recipies)
@@ -311,7 +251,7 @@ def find_recipe(recipes):
         eligible_recipies.remove(recipe_option)
 
         # Display option
-        display_recipe(recipe_option)
+        support.display_recipe(recipe_option)
 
         # Prompt for next result or exit
         selection = input("Enter 'n' for the next recipe\nEnter 'q' to exit:\n")
@@ -325,14 +265,14 @@ def find_recipe(recipes):
 
         if len(eligible_recipies) == 0:
             # Reset screen
-            screen_reset()
+            support.screen_reset()
             # No more recipes message
             end_message = 'No other eligible recipes.'
             match_review = False
             break
 
     # Reset screen
-    screen_reset()
+    support.screen_reset()
 
     # Print end message
     print(end_message)

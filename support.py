@@ -2,16 +2,11 @@
 Support functions for Feed Me.
 
 @author: Andrew Eilertson
-
-Created: 7/17/2020
-Updated: 7/20/2021
 """
 
 import csv
 import pickle
-import os
-
-from feed_me_refs import known_sources
+import references
 
 
 def save_obj(obj, filename):
@@ -31,55 +26,19 @@ def import_recipes():
     return data
 
 
-def screen_reset():
-    # Clear screen
-    os.system('cls')
-    # Print header
-    print("""
-    ______              __   __  ___     __
-   / ____/__  ___  ____/ /  /  |/  /__  / /
-  / /_  / _ \/ _ \/ __  /  / /|_/ / _ \/ / 
- / __/ /  __/  __/ /_/ /  / /  / /  __/_/  
-/_/    \___/\___/\__,_/  /_/  /_/\___(_)   
-    """)
-
-
-def recipe_source(url):
+def get_recipe_source(url):
     """Determine if URL is from known source. Returns source or 'unkown'"""
 
     # Get base url
     base_url = url.split('/')[2]
 
     # Check if base url in known sources
-    if base_url in known_sources.keys():
-        source = known_sources[base_url]
+    if base_url in references.known_sources.keys():
+        source = references.known_sources[base_url]
     else:
         source = 'unknown'
 
     return(source)
-
-
-def display_recipe(recipe):
-    # Set ingredients to string
-    ingredients = '\n'.join(recipe['ingredients']).title()
-    # Set instructions to string
-    instructions = ''
-    for num, step in enumerate(recipe['instructions'], start=1):
-        instructions += f'\n{num}. {step}'
-    # Print the recipe
-    print(f"""
-{recipe['name']}
-Author - {recipe['chef']}
-Yeild - {recipe['yeild']}
-URL - {recipe['url']}
-
-Ingredients:
-
-{ingredients}
-
-Instructions:
-{instructions}
-    """)
 
 
 def set_instructions(instr):
