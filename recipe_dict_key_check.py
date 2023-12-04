@@ -1,10 +1,7 @@
-from feed_me_support import (
-    import_recipes,
-    save_obj
-)
+import support
 
 # Get recipes
-recipes = import_recipes()
+recipes = support.import_recipes()
 
 # Check if each standard key is in each recipe
 for recipe in recipes:
@@ -30,4 +27,4 @@ for recipe in recipes:
         recipe['instructions'] = []
 
 # Pickle revised recipe list
-save_obj(recipes, 'recipes')
+support.save_obj(recipes, 'recipes')
