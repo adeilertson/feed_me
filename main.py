@@ -46,3 +46,7 @@ def main():
             print('Exiting')
             running = False
             break
+
+
+if __name__ == '__main__':
+    main()
