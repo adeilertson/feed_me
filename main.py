@@ -7,7 +7,7 @@ identify recipie information, with missing information added manually
 """
 
 import support
-import feed_me
+import actions
 import screens
 
 def main():
@@ -28,19 +28,21 @@ def main():
 
         # Get user command selection
         cmd = input('Enter selection: ').lower()
-        # Set result to blank
+        # Set/Reset result to blank
         res = '' 
 
         # Vailid command check
         if cmd not in task_options:
             res = input("Unknown command \n Press enter to continue.").lower()
+
         # Find a Recipe
         elif cmd == 'find':
-            feed_me.find_recipe(recipes)
+            actions.find_recipe(recipes)
 
         # Add a Recipe
         elif cmd == 'add':
-            feed_me.add_recipe(recipes)
+            actions.add_recipe(recipes)
+
         # Exit check
         if cmd == 'q' or res == 'q':
             print('Exiting')
