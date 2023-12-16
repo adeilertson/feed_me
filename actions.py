@@ -5,7 +5,9 @@ import json
 from bs4 import BeautifulSoup
 
 import support
+import screens
 import references
+import db_actions
 
 
 def get_matching_recipes(recipes, name='none', ingredients=['none']):
@@ -284,3 +286,17 @@ def find_recipe(recipes):
 
     if search_again.lower() == 'y':
         find_recipe(recipes)
+
+
+def delete_recipie():
+    pass
+
+
+def reset_recipie_table():
+    screens.screen_reset()
+    print('\nWARNING!\n\nResetting the recipie database will delete all stored recipies.')
+    confirm = input('\nContinue? (y/n): ').lower()
+
+    if confirm == 'y':
+        db_actions.db_reset()
+        cont = input('Press enter to return to admin menu')

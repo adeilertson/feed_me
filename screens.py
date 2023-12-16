@@ -39,6 +39,18 @@ def print_menu():
         Options:
         - 'find' to search for a recipe
         - 'add' to add a new recipie to the repository
+        - 'admin' to manage the recipies database
+        - 'q' to exit
+        """)
+    
+
+def print_admin_menu():
+    print("""
+        Feed Me Database Admin Menu
+
+        Options:
+        - 'remove' to remove a recipie from the database by name
+        - 'reset' to reset the recipie table, deleting all stored recipie data
         - 'q' to exit
         """)
 
