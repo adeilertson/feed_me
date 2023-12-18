@@ -60,19 +60,32 @@ def new_recipe_builder(url, source):
     # Set recipe URL
     new_recipe['url'] = url
     # Clean and set recipe ingredients
-    new_recipe['ingredients'] = [support.strip_html(ingredient) for ingredient in recipe_data['recipeIngredient']]
+    try:
+        new_recipe['ingredients'] = [support.strip_html(ingredient) for ingredient in recipe_data['recipeIngredient']]
+    except KeyError
+        new_recipe['ingredients'] = []
+        new_recipe['error'] = 'missing_recipe_data'
     # Set recipe yield
-    new_recipe['yield'] = recipe_data['recipeYield']
-    # Clean, format and set recipe instructions
+    try:
+        new_recipe['yield'] = recipe_data['recipeYield']
+    except KeyError:
+        new_recipe['yield'] = ''
+        new_recipe['error'] = 'missing_recipe_data'
+    # Parse, clean, and format recipe instructions
     new_recipe['instructions'] = support.set_instructions(recipe_data['recipeInstructions'])
 
     # Set recipe chef based on source
-    if type(recipe_data['author']) is list:
-        new_recipe['chef'] = recipe_data['author'][0]['name']
-    elif type(recipe_data['author']) is dict:
-        new_recipe['chef'] = recipe_data['author']['name']
-    else:
+    try:
+        if type(recipe_data['author']) is list:
+            new_recipe['chef'] = recipe_data['author'][0]['name']
+        elif type(recipe_data['author']) is dict:
+            new_recipe['chef'] = recipe_data['author']['name']
+        else:
+            new_recipe['chef'] = ''
+            new_recipe['error'] = 'missing_recipe_data'
+    except KeyError:
         new_recipe['chef'] = ''
+        new_recipe['error'] = 'missing_recipe_data'
 
     return(new_recipe)
 
@@ -107,13 +120,19 @@ def add_recipe():
             cont = input('Unkown source. Enter information manually? (y/n) ').lower()
             if cont == 'n':
                 return None
+            new_recipe = references.get_blank_recipie()
         else:
             # Collect page data and attempt to parse recipe parts
             new_recipe = new_recipe_builder(url, source)
 
-        # Bad/Unknown recipie structure URL
-        if new_recipe['error'] == 'no_recipe_data':
-            cont = input('Unable to get recipe from page. Confirm page has recipe data or try manual entry.\nPress enter to return to menu')
+            # Bad/Unknown recipie structure URL
+            if new_recipe['error'] == 'no_recipe_data':
+                cont = input('Unable to get recipe from page. Confirm page has recipe data or try manual entry.\nPress enter to return to menu')
+                return None
+            elif new_recipe['error'] == 'missing_recipe_data':
+                cont = input('Data missing from recipe. Manually add missing data? (y/n) ').lower()
+                if cont != 'y':
+                    return None
 
     # Manual/Incomplte URL
     # Reset screen
@@ -130,7 +149,9 @@ def add_recipe():
 
             # Set instructions
             elif field == 'instructions':
-                entry = input('Instructions is blank. Enter the instructions for the recipe. Copy/paste is recommended\n')
+                print("Instructions missing.\n\nFor each step, paste in the text and hit 'Enter', when all steps have been entered, press 'Enter' again\n")
+                user_instructions = get_instructions()
+                entry = support.format_instructions(user_instructions)
 
             # Set ingredients
             elif field == 'ingredients':
@@ -161,8 +182,18 @@ def add_recipe():
         add_recipe()
 
 
+def get_instructions(instructions=[]):
+    step = input("Paste step text: ")
+    if step.lower() in ['', 'q', 'quit', 'e', 'exit']:
+        return instructions
+    else:
+        instructions.append(step)
+        get_instructions(instructions)
+        return instructions
+
+
 def get_search_terms(terms=[]):
-    term = input("")
+    term = input("Enter ingridient: ")
     if term.lower() in ['', 'q', 'quit', 'e', 'exit']:
         return terms
     else:
