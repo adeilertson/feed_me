@@ -10,23 +10,6 @@ import references
 import db_actions
 
 
-def get_matching_recipes(recipes, name='none', ingredients=['none']):
-    """Return list of recipes matching provided criteria from provided list of recipes"""
-
-    return_recipes = []
-
-    for recipe in recipes:
-        criteria = [
-            name in recipe['name'].lower() or name == 'none',
-            any(item.title() in recipe['ingredients'] for item in ingredients) or ingredients == ['none'],
-        ]
-
-        if all(criteria):
-            return_recipes.append(recipe)
-
-    return return_recipes
-
-
 def new_recipe_builder(url, source):
     """
     Build new recipe dictionary from compatiable URL.
@@ -176,6 +159,43 @@ def add_recipe():
 
     if add_again.lower() == 'y':
         add_recipe()
+
+
+def get_search_terms(terms=[]):
+    term = input("")
+    if term.lower() in ['', 'q', 'quit', 'e', 'exit']:
+        return terms
+    else:
+        terms.append(term)
+        get_search_terms(terms)
+        return terms
+
+
+def ingredient_search():
+    # Reset screen
+    screens.screen_reset()
+    # Print terms instructions
+    screens.print_ingredient_search_instructions()
+
+    # Set ingredients to search for
+    search_terms = get_search_terms()
+
+    # Reset screen
+    screens.screen_reset()
+    print('Running query...')
+
+    # Run query
+    results = db_actions.run_ingredient_query(search_terms)
+
+    # Reset screen
+    screens.screen_reset()
+
+    # Display results
+    print(f"Found {len(results)} recipes with {' '.join(search_terms)}\n")
+    for idx, result in enumerate(results, start=1):
+        print(f"{idx}. {result.recipe_name}")
+
+    cont = input('\nPress enter to return to menu')
 
 
 def find_recipe(recipes):

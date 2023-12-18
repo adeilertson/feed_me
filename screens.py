@@ -25,6 +25,14 @@ Instructions:
     """)
 
 
+def print_ingredient_search_instructions():
+    print("""
+Enter each ingrident to search for and then press 'Enter'.
+After you're done adding ingredients, press 'Enter' again.
+
+    """)
+
+
 def print_menu():
     print("""
         Welcome to Feed Me!
@@ -32,7 +40,7 @@ def print_menu():
         Your recipie picking solution for when no one knows what they want!
 
         Options:
-        - 'find' to search for a recipe
+        - 'search' to search for a recipe based on ingredients 
         - 'add' to add a new recipie to the repository
         - 'admin' to manage the recipies database
         - 'q' to exit

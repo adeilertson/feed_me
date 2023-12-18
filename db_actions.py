@@ -29,6 +29,14 @@ def test_db_connection():
 
 
 def add_recipe(new_recipe):
+    """
+    Adds a provided recipe to the database.
+
+    Adds recipe and ingridents to the database
+
+    Args:
+        new_recipe (list): List with recipe data
+    """
     # Start session
     session = get_session()
 
@@ -95,6 +103,14 @@ def db_reset():
 
 
 def get_session():
+    """
+    Start session for database defined by 'database_path' in config file.
+
+    Config location - feed_me/config/config.yml
+
+    Returns:
+        sqlalchemy.orm.Session: SQLAlchemy session with the config database
+    """
     # Get config
     cfg = file_handling.get_cfg()
 
@@ -108,18 +124,26 @@ def get_session():
     return(session)
 
 
-def ingredient_search(search_term):
+def run_ingredient_query(search_terms):
+    """
+    Search for recipes containing specified ingredients.
+
+    Args:
+        search_terms (list): A list of ingredient names to search for.
+
+    Returns:
+        list: A list of Recipe objects matching the criteria.
+    """
+    # Start session for the query
     session = get_session()
-    # Query Ingredient table for specific ingredient
-    results = (
+    # Build and run query
+    result = (
         session.query(models.Recipe)
         .join(models.ingredient_association)
         .join(models.Ingredient)
-        .filter(models.Ingredient.ingredient_name.ilike(f'%{search_term}%'))  # Use ilike for case-insensitive search
-        .group_by(models.Recipe.recipe_id)  # To get only one result for each entry in Recipe table
+        .filter(db.and_(*[models.Ingredient.ingredient_name.ilike(f'%{term}%') for term in search_terms]))
+        .group_by(models.Recipe.recipe_id)
         .all()
     )
     
-    print(f"Recipes with {search_term}")
-    for result in results:
-        print(result.recipe_name)
+    return result

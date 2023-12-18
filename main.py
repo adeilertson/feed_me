@@ -37,9 +37,7 @@ def main():
 
         # Search for recipes with an ingredient
         elif cmd == 'search':
-            search_term = input("Enter ingrident to search for: ")
-            db_actions.ingredient_search(search_term)
-            res = input()
+            actions.ingredient_search()
 
         # Add a Recipe
         elif cmd == 'add':
