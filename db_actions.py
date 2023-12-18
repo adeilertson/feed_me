@@ -1,8 +1,10 @@
-import pprint as pp
+"""
+Database Actions
 
+
+"""
 import sqlalchemy as db
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, joinedload
+from sqlalchemy.orm import sessionmaker
 
 import file_handling
 import models
@@ -65,41 +67,11 @@ def add_recipe(new_recipe):
 
 
 def recipes_delete(recipe):
-    # Get config
-    cfg = file_handling.get_cfg()
-
-    # Connect to db
-    engine = db.create_engine(cfg['database_path'])
-
-    # Delete data from db
-    with engine.connect() as connection:
-        meta = db.MetaData()
-        recipe_table = db.Table('recipes', meta, autoload_with=connection)
-        connection.execute(db.delete(recipe_table).where(recipe_table.c.name == recipe))
-        connection.commit()
+    pass
 
 
 def db_reset():
-    # Set Base
-    Base = declarative_base()
-
-    # Get cfg
-    cfg = file_handling.get_cfg()
-
-    # Connect to db
-    engine = db.create_engine(cfg['database_path'])
-
-    # Drop all tables
-    Base.metadata.drop_all(engine)
-
-    with engine.connect() as connection:
-
-        Recipie = models.Recipie()
-        Ingredient = models.Ingredient()
-        IngredientAssociation = models.IngredientAsociation()
-        Base.metadata.create_all(engine)
-
-        print(f"Database reset {cfg['database_path']}")
+    pass
 
 
 def get_session():
