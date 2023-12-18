@@ -13,11 +13,8 @@ import models
 import db_actions
 
 def main():
-    # Get recipes
-    recipes = support.import_recipes()
-
     # Task options
-    task_options = ['q', 'find', 'add', 'admin', 'test', 'search']
+    task_options = ['q', 'search', 'add', 'admin', 'test']
     admin_task_options = ['reset', 'remove']
 
     # Main Loop
@@ -38,21 +35,15 @@ def main():
         if cmd not in task_options:
             res = input("Unknown command \n Press enter to continue.").lower()
 
-        # Find a Recipe
-        elif cmd == 'find':
-            #actions.find_recipe(recipes)
-            db_actions.db_test_query()
-            res = input()
-
+        # Search for recipes with an ingredient
         elif cmd == 'search':
-            db_actions.test_search('apple')
+            search_term = input("Enter ingrident to search for: ")
+            db_actions.ingredient_search(search_term)
             res = input()
 
         # Add a Recipe
         elif cmd == 'add':
-            #actions.add_recipe(recipes)
-            db_actions.db_test_add()
-            res = input()
+            actions.add_recipe()
 
         # Test db connection
         elif cmd == 'test':

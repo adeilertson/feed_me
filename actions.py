@@ -76,12 +76,11 @@ def new_recipe_builder(url, source):
     new_recipe['name'] = recipe_data['name']
     # Set recipe URL
     new_recipe['url'] = url
-    # Set recipe ingredients
-    new_recipe['ingredients'] = recipe_data['recipeIngredient']
-    # Set recipe yeild
-    new_recipe['yeild'] = recipe_data['recipeYield']
-
-    # Set recipe instructions
+    # Clean and set recipe ingredients
+    new_recipe['ingredients'] = [support.strip_html(ingredient) for ingredient in recipe_data['recipeIngredient']]
+    # Set recipe yield
+    new_recipe['yield'] = recipe_data['recipeYield']
+    # Clean, format and set recipe instructions
     new_recipe['instructions'] = support.set_instructions(recipe_data['recipeInstructions'])
 
     # Set recipe chef based on source
@@ -95,21 +94,19 @@ def new_recipe_builder(url, source):
     return(new_recipe)
 
 
-def add_recipe(recipes, rec_retry=False):
-    # Set empty recipe
-    new_recipe = references.get_blank_recipe()
-
+def add_recipe():
     # Reset screen
-    support.screen_reset()
+    screens.screen_reset()
 
     # Determine method (url or manual)
     method = input("Enter 'url' to add a recipie from a website\nEnter 'manual' to add a recipe yourself:\n").lower()
-    # Task selection loop
+    # Valid selection check
     if method not in ['url', 'manual']:
-        method = input('Invalid entry. Re-Enter selection: ')
+        cont = input('Invalid entry. Press enter to return to menu')
+        return None
 
     # Reset screen
-    support.screen_reset()
+    screens.screen_reset()
 
     # URL Processing
     if method == 'url':
@@ -122,32 +119,22 @@ def add_recipe(recipes, rec_retry=False):
         # If unkown source revert to manual with option to exit
         if source == 'unknown':
             # Reset screen
-            support.screen_reset()
-
+            screens.screen_reset()
             print('Unkown source')
-
+            cont = input('Unkown source. Enter information manually? (y/n) ').lower()
+            if cont == 'n':
+                return None
         else:
-            # If known source, set all possible fields
+            # Collect page data and attempt to parse recipe parts
             new_recipe = new_recipe_builder(url, source)
 
-    # Bad/Unknown recipie structure URL
-    if new_recipe['error'] == 'no_recipe_data':
-        print('Unable to get recipe from page. Confirm page has recipe data or try manual entry.')
-        retry_url = input('Re-Enter URL? (y/n) ')
-        # Retry URL loop
-        if retry_url not in ['y', 'n']:
-            method = input('Invalid entry. Re-Enter selection: ')
-        
-        # Retry options
-        if retry_url == 'y':
-            add_recipe(recipes, rec_retry=True)
-        elif retry_url == 'n':
-            return None
+        # Bad/Unknown recipie structure URL
+        if new_recipe['error'] == 'no_recipe_data':
+            cont = input('Unable to get recipe from page. Confirm page has recipe data or try manual entry.\nPress enter to return to menu')
 
     # Manual/Incomplte URL
-
     # Reset screen
-    support.screen_reset()
+    screens.screen_reset()
 
     # Prompt user to fill in blank fields
     for field, value in new_recipe.items():
@@ -155,20 +142,12 @@ def add_recipe(recipes, rec_retry=False):
             continue
         if value in ['', 0, []]:
             # Set yield
-            if field == 'yeild':
+            if field == 'yield':
                 entry = input('Yield is blank. Enter the yield for the recipe (ex. 4).\n')
-                val_check = True
-                while val_check is True:
-                    try:
-                        entry = int(entry)
-                        val_check = False
-                    except ValueError:
-                        entry = input('Error. Re-Enter Yield as digits (ex. 4)')
 
             # Set instructions
             elif field == 'instructions':
-                text = input('Instructions is blank. Enter the instructions for the recipe separated by at symbols (@).\n')
-                entry = text.split('@')
+                entry = input('Instructions is blank. Enter the instructions for the recipe. Copy/paste is recommended\n')
 
             # Set ingredients
             elif field == 'ingredients':
@@ -178,29 +157,25 @@ def add_recipe(recipes, rec_retry=False):
             # Set remaining fields with generic message
             else:
                 entry = input(f'{field.title()} is blank. Enter the {field} for the recipe.\n')
+
+            # Update field with new data
             new_recipe[field] = entry
 
-    # Add recipie to master list
-    recipes.append(new_recipe)
-
-    # Pickle new recipie list
-    support.save_obj(recipes, 'recipes')
+    # Add recipie to database
+    db_actions.add_recipe(new_recipe)
 
     # Reset screen
-    support.screen_reset()
+    screens.screen_reset()
 
-    # Retry Check
-    # If true, retry URL used to recursivly call function, flag prevents extra add again checks
-    if rec_retry == True:
-        return None
+    # Display recipe
+    screens.display_recipe(new_recipe)
+    cont = input('\nPress enter to conitnue. ')
 
     # Add another recipie check
     add_again = input('Would you like to add another recipe? (y/n): ')
-    while add_again.lower() not in ['y', 'n']:
-        add_again = input('Would you like to add another recipe? (y/n): ')
 
     if add_again.lower() == 'y':
-        add_recipe(recipes)
+        add_recipe()
 
 
 def find_recipe(recipes):
@@ -212,7 +187,7 @@ def find_recipe(recipes):
     end_message = 'Undefined error.'
 
     # Reset screen
-    support.screen_reset()
+    screens.screen_reset()
 
     # Describe search options
     print('Enter search term for each option. Leave blank and press enter to skip.')
@@ -244,7 +219,7 @@ def find_recipe(recipes):
     # Display results
     while match_review is True:
         # Reset screen
-        support.screen_reset()
+        screens.screen_reset()
 
         # Randomly select recipe option
         recipe_option = random.choice(eligible_recipies)
@@ -253,7 +228,7 @@ def find_recipe(recipes):
         eligible_recipies.remove(recipe_option)
 
         # Display option
-        support.display_recipe(recipe_option)
+        screens.display_recipe(recipe_option)
 
         # Prompt for next result or exit
         selection = input("Enter 'n' for the next recipe\nEnter 'q' to exit:\n")
@@ -267,14 +242,14 @@ def find_recipe(recipes):
 
         if len(eligible_recipies) == 0:
             # Reset screen
-            support.screen_reset()
+            screens.screen_reset()
             # No more recipes message
             end_message = 'No other eligible recipes.'
             match_review = False
             break
 
     # Reset screen
-    support.screen_reset()
+    screens.screen_reset()
 
     # Print end message
     print(end_message)

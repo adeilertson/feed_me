@@ -115,7 +115,7 @@ def add_csv_recipes(file, replace_all=False):
                 'name': row[0],
                 'url': row[1],
                 'ingredients': row[2],
-                'yeild': row[3],
+                'yield': row[3],
                 'instructions': row[4],
                 'chef': row[5],
                 'cuisine': row[6],

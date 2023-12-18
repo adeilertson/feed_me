@@ -69,11 +69,10 @@ class Recipe(Base):
     instructions = Column(Text)
 
     # Set table relationships - 
-    #ingredients: Mapped[list[Ingredient]] = relationship(secondary=ingredient_association, back_populates="recipes")
     ingredients = relationship("Ingredient", secondary=ingredient_association, back_populates="recipes")
 
     def __repr__(self):
-        return f"Recipe {self.name}"
+        return f"Recipe {self.recipe_name}"
 
 
 # Ingredient data model
@@ -85,7 +84,6 @@ class Ingredient(Base):
     # Set table fields
     ingredient_id = Column(Integer, primary_key=True, autoincrement=True)
     ingredient_name = Column(String(255))
-    #recipes: Mapped[list[Recipe]] = relationship(secondary=ingredient_association, back_populates='ingredients')
     recipes = relationship("Recipe", secondary=ingredient_association, back_populates='ingredients')
 
 

@@ -2,7 +2,7 @@ import pprint as pp
 
 import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, joinedload
 
 import file_handling
 import models
@@ -28,19 +28,32 @@ def test_db_connection():
     return result
 
 
-def recipes_insert(new_recipe):
-    # Get config
-    cfg = file_handling.get_cfg()
+def add_recipe(new_recipe):
+    # Start session
+    session = get_session()
 
-    # Connect to db
-    engine = db.create_engine(cfg['database_path'])
+    # Build recipe data model object
+    recipe = models.Recipe(
+        recipe_name=new_recipe['name'],
+        chef=new_recipe['chef'],
+        servings=new_recipe['yield'],
+        url=new_recipe['url'],
+        instructions=new_recipe['instructions'],
+    )
 
-    # Add data to db
-    with engine.connect() as connection:
-        meta = db.MetaData()
-        recipe_table = db.Table('recipes', meta, autoload_with=connection)
-        connection.execute(db.insert(recipe_table), new_recipe)
-        connection.commit()
+    # Build ingrident data model objects
+    ingredient_objects = [models.Ingredient(ingredient_name=ingredient) for ingredient in new_recipe['ingredients']]
+    # Add ingridents to recipie
+    recipe.ingredients = ingredient_objects
+    # Add recipie object
+    session.add(recipe)
+    # Add ingrident object list
+    session.add_all(ingredient_objects)
+    # Commit to update database
+    session.commit()
+
+    # Close the session
+    session.close()
 
 
 def recipes_delete(recipe):
@@ -56,19 +69,6 @@ def recipes_delete(recipe):
         recipe_table = db.Table('recipes', meta, autoload_with=connection)
         connection.execute(db.delete(recipe_table).where(recipe_table.c.name == recipe))
         connection.commit()
-
-
-def recipes_query():
-    pass
-    # SELECT CS.Recipie
-    # FROM RecipieIngredients AS RI
-    #     INNER JOIN
-    #     QueryIngredients AS QI
-    #         ON RI.Ingredients = QI.Ingridents
-    # GROUP BY Recipie
-    # HAVING COUNT(*) = ( SELECT COUNT(*)
-    #                     FROM QueryIngredients
-    #                     GROUP BY ());
 
 
 def db_reset():
@@ -108,28 +108,18 @@ def get_session():
     return(session)
 
 
-def test_search(search):
+def ingredient_search(search_term):
     session = get_session()
     # Query Ingredient table for specific ingredient
-    query = session.query(models.Ingredient).where(models.Ingredient.ingredient_name==search).all()
-
-    print(f"Recipes with {search}")
-    for result in query:
-        for recipe in result.recipes:
-            print(recipe.recipe_name)
-
-
-def db_test_query():
-    session = get_session()
-    records = session.query(models.Ingredient).filter_by(ingredient_name='apple').all()
+    results = (
+        session.query(models.Recipe)
+        .join(models.ingredient_association)
+        .join(models.Ingredient)
+        .filter(models.Ingredient.ingredient_name.ilike(f'%{search_term}%'))  # Use ilike for case-insensitive search
+        .group_by(models.Recipe.recipe_id)  # To get only one result for each entry in Recipe table
+        .all()
+    )
     
-    print(records[0].__dict__)
-
-    # for rec in records:
-    #     print(rec.__dict__)
-
-    # records = session
-    # .query(Customer)
-    # .filter_by(first_name="Carl")
-    # .all()
-
+    print(f"Recipes with {search_term}")
+    for result in results:
+        print(result.recipe_name)

@@ -16,7 +16,7 @@ def get_blank_recipie():
         'error': '',
         'name': '',
         'chef': '',
-        'yeild': 0,
+        'yield': 0,
         'url': '',
         'ingredients': [],
         'instructions': []
