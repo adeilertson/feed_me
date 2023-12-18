@@ -11,8 +11,27 @@ import actions
 import screens
 import models
 import db_actions
+import file_handling
 
 def main():
+    # Check if database exists
+    res = db_actions.test_db_connection()
+    if "Successfully connected" not in res:
+        cfg = file_handling.get_cfg()
+        print(f"Unable to connect to database at {cfg['database_path']}")
+        create_check = input(f"\n\nCreate database at path above? (y/n) ").lower()
+        if create_check == 'y':
+            models.initialize_database()
+            res = db_actions.test_db_connection()
+            if "Successfully connected" not in res:
+                print(f"Unable to connect to database at {cfg['database_path']}")
+                cont = input("\nUnknown issue preventing databse creation/connection. Press enter to exit.")
+                return None
+            else:
+                cont = input(f"\nDatabase created. Press enter to go to main menu.")
+        else:
+            return None
+
     # Task options
     task_options = ['q', 'search', 'add', 'admin', 'test']
     admin_task_options = ['reset', 'remove']

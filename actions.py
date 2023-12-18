@@ -62,7 +62,7 @@ def new_recipe_builder(url, source):
     # Clean and set recipe ingredients
     try:
         new_recipe['ingredients'] = [support.strip_html(ingredient) for ingredient in recipe_data['recipeIngredient']]
-    except KeyError
+    except KeyError:
         new_recipe['ingredients'] = []
         new_recipe['error'] = 'missing_recipe_data'
     # Set recipe yield

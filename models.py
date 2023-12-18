@@ -3,47 +3,15 @@ Feed Me Data Models
 
 
 """
-from __future__ import annotations
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, Table
+from sqlalchemy import create_engine, Column, DateTime, ForeignKey, Integer, String, Text, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from sqlalchemy.orm import Mapped
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 import file_handling
 
-# Create database engine
-cfg = file_handling.get_cfg()
-engine = create_engine(cfg['database_path'])
-
-# Create database session
-# Session = sessionmaker(bind=engine)
-# session = Session()
-
 
 Base = declarative_base()
-
-
-# Ingrediant and Recipe Association table
-# class IngredientAsociation(Base):
-#     """Association model for Ingredients and Recipes"""
-#     __tablename__ = 'IngredientAssociation'
-
-#     # Set table fields
-#     asscociation_id = Column(Integer, primary_key=True, autoincrement=True)
-#     recipe_id = Column(Integer, ForeignKey('Recipe.recipe_id'))
-#     ingredient_id = Column(Integer, ForeignKey('Ingredient.ingredient_id'))
-
-# IngredientAsociation = Table(
-#     'ingredient_association',
-#     Base.metadata,
-#     Column('asscociation_id', Integer, primary_key=True),
-#     Column('recipe_id', Integer, ForeignKey('Recpie.recipe_id')),
-#     Column('ingredient_id', Integer, ForeignKey('Ingredient.ingredient_id'))
-#     )
 
 ingredient_association = Table(
     "IngredientAssociation",
@@ -87,4 +55,14 @@ class Ingredient(Base):
     recipes = relationship("Recipe", secondary=ingredient_association, back_populates='ingredients')
 
 
-Base.metadata.create_all(engine)
+def initialize_database():
+    """
+    Create database with tables defined in feed_me/models located specified in config file as 'database_path'
+
+    Config location - feed_me/config/config.yml
+    """
+
+    cfg = file_handling.get_cfg()
+    engine = create_engine(cfg['database_path'])
+    
+    Base.metadata.create_all(engine)

@@ -5,6 +5,7 @@ Database Actions
 """
 import sqlalchemy as db
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import NoSuchTableError
 
 import file_handling
 import models
@@ -14,9 +15,6 @@ def test_db_connection():
     # Get config
     cfg = file_handling.get_cfg()
 
-    # Set default result
-    result = f"Unable to connect to {cfg['database_path']}"
-
     # Connect to db
     engine = db.create_engine(cfg['database_path'])
 
@@ -24,8 +22,11 @@ def test_db_connection():
     with engine.connect() as connection:
         # Attempt to connect to recipes table to confirm connection
         meta = db.MetaData()
-        recipe_table = db.Table('Recipe', meta, autoload_with=connection)
-        result = f"Successfully connected to {cfg['database_path']}"
+        try:
+            recipe_table = db.Table('Recipe', meta, autoload_with=connection)
+            result = f"Successfully connected to {cfg['database_path']}"
+        except NoSuchTableError:
+            result = f"Unable to connect to 'Recipe' table. Ensure database and table exists at {cfg['database_path']}"
 
     return result
 
