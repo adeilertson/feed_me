@@ -54,6 +54,9 @@ class Ingredient(Base):
     ingredient_name = Column(String(255))
     recipes = relationship("Recipe", secondary=ingredient_association, back_populates='ingredients')
 
+    def __repr__(self):
+        return f"Ingredient {self.ingredient_name}"
+
 
 def initialize_database():
     """

@@ -74,6 +74,16 @@ def strip_html(text):
     return(text)
 
 
+def get_search_terms(terms=[]):
+    term = input("Enter ingridient: ")
+    if term.lower() in ['', 'q', 'quit', 'e', 'exit']:
+        return terms
+    else:
+        terms.append(term)
+        get_search_terms(terms)
+        return terms
+
+
 def format_instructions(instructions):
     # Blank string to build from
     formatted_text = ''
