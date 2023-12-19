@@ -206,11 +206,12 @@ def recipe_viewer(recipes, idx=0):
     viewing = True
     while viewing:
         screens.screen_reset()
+        print(f"Viewing {idx+1} of {len(recipes)}")
         screens.display_recipe(recipes[idx])
         cont = input("Enter 'previous' or 'next' to navigate. Press 'Enter' to return to found recipes.")
         if cont in ['n', 'next', 'forward']:
             # Increase idx by 1 if it that keeps less than or equal to the number of recipes, otherwise, set it to zero to go to the first recipe
-            if idx + 1 <= len(recipes):
+            if idx + 1 < len(recipes):
                 idx += 1
             else:
                 idx = 0
@@ -219,7 +220,7 @@ def recipe_viewer(recipes, idx=0):
             if idx - 1 >= 0:
                 idx -= 1
             else:
-                idx = len(recipes)
+                idx = len(recipes)-1
         elif cont in ['', 'q', 'quit', 'e', 'exit']:
             return None
 
