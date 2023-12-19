@@ -8,20 +8,22 @@ import os
 
 def display_recipe(recipe):
     # Set ingredients to string
-    ingredients = '\n'.join(recipe['ingredients']).title()
+    ingredients_list = [ingredient.ingredient_name for ingredient in recipe.ingredients]
+    ingredients = '\n'.join(ingredients_list).title()
     # Print the recipe
     print(f"""
-{recipe['name']}
-Author - {recipe['chef']}
-Yield - {recipe['yield']}
-URL - {recipe['url']}
+{recipe.recipe_name}
+
+Author - {recipe.chef}
+Yield - {recipe.servings}
+URL - {recipe.url}
 
 Ingredients:
 
 {ingredients}
 
 Instructions:
-{recipe['instructions']}
+{recipe.instructions}
     """)
 
 

@@ -22,7 +22,6 @@ def new_recipe_builder(url, source):
                 new_recipe (dict): Dictionary formatted to be added to recipe list
 
     """
-
     # Set empty recipe dict
     new_recipe = {}
 
@@ -133,6 +132,8 @@ def add_recipe():
                 cont = input('Data missing from recipe. Manually add missing data? (y/n) ').lower()
                 if cont != 'y':
                     return None
+    elif method == 'manual':
+        new_recipe = references.get_blank_recipie()
 
     # Manual/Incomplte URL
     # Reset screen
@@ -150,7 +151,7 @@ def add_recipe():
             # Set instructions
             elif field == 'instructions':
                 print("Instructions missing.\n\nFor each step, paste in the text and hit 'Enter', when all steps have been entered, press 'Enter' again\n")
-                user_instructions = get_instructions()
+                user_instructions = get_instructions([])
                 entry = support.format_instructions(user_instructions)
 
             # Set ingredients
@@ -182,6 +183,47 @@ def add_recipe():
         add_recipe()
 
 
+def navigate_recipes(recipes):
+    running = True
+    while running:
+        screens.screen_reset()
+        print('Recipes set:')
+        # Show recipe list
+        for idx, recipe in enumerate(recipes, start=1):
+            print(f"{idx}. {recipe.recipe_name}")
+        
+        selection = input("Enter number of recipe to view or 'quit' to return to main menu: ").lower().replace('.','')
+        if selection in ['', 'q', 'quit', 'e', 'exit']:
+            return None
+        elif selection.isdigit() and int(selection) <= len(recipes):
+            selection_idx = int(selection) - 1
+            recipe_viewer(recipes, idx=selection_idx)
+        else:
+            cont = input("Unknown input. Press enter to try again.")
+
+
+def recipe_viewer(recipes, idx=0):
+    viewing = True
+    while viewing:
+        screens.screen_reset()
+        screens.display_recipe(recipes[idx])
+        cont = input("Enter 'previous' or 'next' to navigate. Press 'Enter' to return to found recipes.")
+        if cont in ['n', 'next', 'forward']:
+            # Increase idx by 1 if it that keeps less than or equal to the number of recipes, otherwise, set it to zero to go to the first recipe
+            if idx + 1 <= len(recipes):
+                idx += 1
+            else:
+                idx = 0
+        elif cont in ['p', 'previous', 'back']:
+            # Decrease idx by 1 if it won't be less than zero, otherwise set it to the number of recipes to go to the last recipe
+            if idx - 1 >= 0:
+                idx -= 1
+            else:
+                idx = len(recipes)
+        elif cont in ['', 'q', 'quit', 'e', 'exit']:
+            return None
+
+
 def get_instructions(instructions=[]):
     step = input("Paste step text: ")
     if step.lower() in ['', 'q', 'quit', 'e', 'exit']:
@@ -192,16 +234,6 @@ def get_instructions(instructions=[]):
         return instructions
 
 
-def get_search_terms(terms=[]):
-    term = input("Enter ingridient: ")
-    if term.lower() in ['', 'q', 'quit', 'e', 'exit']:
-        return terms
-    else:
-        terms.append(term)
-        get_search_terms(terms)
-        return terms
-
-
 def ingredient_search():
     # Reset screen
     screens.screen_reset()
@@ -209,7 +241,7 @@ def ingredient_search():
     screens.print_ingredient_search_instructions()
 
     # Set ingredients to search for
-    search_terms = get_search_terms()
+    search_terms = support.get_search_terms([])
 
     # Reset screen
     screens.screen_reset()
@@ -218,111 +250,31 @@ def ingredient_search():
     # Run query
     results = db_actions.run_ingredient_query(search_terms)
 
+    # Open navigation for recipes
+    navigate_recipes(results)
+
     # Reset screen
-    screens.screen_reset()
+    # screens.screen_reset()
 
     # Display results
-    print(f"Found {len(results)} recipes with {' '.join(search_terms)}\n")
-    for idx, result in enumerate(results, start=1):
-        print(f"{idx}. {result.recipe_name}")
+    # print(f"Found {len(results)} recipes with {' '.join(search_terms)}\n")
+    # for idx, result in enumerate(results, start=1):
+    #     print(f"{idx}. {result.recipe_name}")
 
-    cont = input('\nPress enter to return to menu')
-
-
-def find_recipe(recipes):
-    search_fields = [
-        {'name': 'Name', 'term': 'none'},
-        {'name': 'Ingredients', 'term': 'none'},
-    ]
-
-    end_message = 'Undefined error.'
-
-    # Reset screen
-    screens.screen_reset()
-
-    # Describe search options
-    print('Enter search term for each option. Leave blank and press enter to skip.')
-
-    # Select search fields
-    for idx, field in enumerate(search_fields, start=1):
-        print(f"{idx} - {field['name']}")
-
-    # Enter search criteria
-    for field in search_fields:
-        field['term'] = input(f"Enter search term for {field['name']}:\n")
-        if field['term'] == '':
-            field['term'] = 'none'
-
-    # Conduct search
-    eligible_recipies = get_matching_recipes(
-        recipes,
-        search_fields[0]['term'],
-        [search_fields[1]['term']],
-    )
-
-    # Any result check
-    if len(eligible_recipies) == 0:
-        end_message = 'No Recipes Found'
-        match_review = False
-    else:
-        match_review = True
-
-    # Display results
-    while match_review is True:
-        # Reset screen
-        screens.screen_reset()
-
-        # Randomly select recipe option
-        recipe_option = random.choice(eligible_recipies)
-
-        # Remove option from eligible recipes
-        eligible_recipies.remove(recipe_option)
-
-        # Display option
-        screens.display_recipe(recipe_option)
-
-        # Prompt for next result or exit
-        selection = input("Enter 'n' for the next recipe\nEnter 'q' to exit:\n")
-        while selection not in ['n', 'q']:
-            selection = input("Enter 'n' for the next recipe\nEnter 'q' to exit:\n")
-
-        if selection == 'q':
-            match_review = False
-            end_message = 'Search Ended'
-            break
-
-        if len(eligible_recipies) == 0:
-            # Reset screen
-            screens.screen_reset()
-            # No more recipes message
-            end_message = 'No other eligible recipes.'
-            match_review = False
-            break
-
-    # Reset screen
-    screens.screen_reset()
-
-    # Print end message
-    print(end_message)
-
-    # Search again check
-    search_again = input('Would you like to try again? (y/n): ')
-    while search_again.lower() not in ['y', 'n']:
-        search_again = input('Would you like to try again? (y/n): ')
-
-    if search_again.lower() == 'y':
-        find_recipe(recipes)
+    # cont = input('\nPress enter to return to menu')
 
 
-def delete_recipie():
+def find_recipe():
     pass
 
 
-def reset_recipie_table():
-    screens.screen_reset()
-    print('\nWARNING!\n\nResetting the recipie database will delete all stored recipies.')
-    confirm = input('\nContinue? (y/n): ').lower()
+def delete_recipe():
+    pass
 
-    if confirm == 'y':
-        db_actions.db_reset()
-        cont = input('Press enter to return to admin menu')
+
+def view_recipes(recipes):
+    """
+    Recipe viewer and navigation within a given set of recipes
+    """
+    pass
+    
