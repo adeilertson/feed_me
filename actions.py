@@ -254,28 +254,26 @@ def ingredient_search():
     # Open navigation for recipes
     navigate_recipes(results)
 
-    # Reset screen
-    # screens.screen_reset()
-
-    # Display results
-    # print(f"Found {len(results)} recipes with {' '.join(search_terms)}\n")
-    # for idx, result in enumerate(results, start=1):
-    #     print(f"{idx}. {result.recipe_name}")
-
-    # cont = input('\nPress enter to return to menu')
-
 
 def find_recipe():
-    pass
+    # Reset screen
+    screens.screen_reset()
+    # Print find recipe instructions
+    screens.print_find_recipe_instructions()
+    # Set recipe name to search for
+    recipe_name = input("Enter all or part of a recipe name to search for: ")
+
+    # Run query
+    results = db_actions.run_recipe_query(recipe_name)
+
+    # Open navication for recipes
+    navigate_recipes(results)
 
 
-def delete_recipe():
-    pass
-
-
-def view_recipes(recipes):
-    """
-    Recipe viewer and navigation within a given set of recipes
-    """
-    pass
-    
+def browse_recipes():
+    # Reset screen
+    screens.screen_reset()
+    # Get all recipes
+    results = db_actions.run_recipe_query('')
+    # Open navigation for recipes
+    navigate_recipes(results)

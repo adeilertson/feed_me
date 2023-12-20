@@ -169,19 +169,16 @@ def run_recipe_query(recipe_name):
     Returns:
         models.Recipe or None: The Recipe object if found, otherwise None.
     """
-    # Use a context manager to ensure proper session management
     with get_session() as session:
-        # Build and run query
-        recipe = (
+        # Find matching recipes by name
+        recipes = (
             session.query(models.Recipe)
+            .options(joinedload(models.Recipe.ingredients))  # Load all ingredients for recipes
             .join(models.ingredient_association)
-            .join(models.Ingredient)
             .filter(models.Recipe.recipe_name.ilike(f'%{recipe_name}%'))
-            .options(contains_eager(models.Recipe.ingredients, alias=models.Ingredient))  # Eager-load all ingredients
-            .first()
+            .all()
         )
-
-    return recipe
+    return recipes
 
 
 def run_single_ingredient_query(search_terms):

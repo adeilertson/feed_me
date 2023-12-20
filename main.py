@@ -5,8 +5,6 @@ Allows you to find a recipe from an intial set and add your own either manually
 or through a URL. URLs from several popular recipe sites are processed to
 identify recipie information, with missing information added manually
 """
-
-import support
 import actions
 import screens
 import models
@@ -33,8 +31,7 @@ def main():
             return None
 
     # Task options
-    task_options = ['q', 'search', 'add', 'admin', 'test']
-    admin_task_options = ['reset', 'remove']
+    task_options = ['q', 'find', 'search', 'browse', 'add', 'test']
 
     # Main Loop
     running = True
@@ -54,9 +51,17 @@ def main():
         if cmd not in task_options:
             res = input("Unknown command \n Press enter to continue.").lower()
 
+        # Find recipe by name
+        elif cmd == 'find':
+            actions.find_recipe()
+
         # Search for recipes with an ingredient
         elif cmd == 'search':
             actions.ingredient_search()
+
+        # Browse all recipes
+        elif cmd == 'browse':
+            actions.browse_recipes()
 
         # Add a Recipe
         elif cmd == 'add':
@@ -67,25 +72,6 @@ def main():
             msg = db_actions.test_db_connection()
             print(msg)
             res = input()
-
-        # Admin
-        elif cmd == 'admin':
-            admin_running = True
-            while admin_running is True:
-                # CLear screen and show admin menu
-                screens.screen_reset()
-                screens.print_admin_menu()
-
-                # Admin command
-                admin_cmd = input('Enter command: ')
-
-                # Remove recipie
-                if admin_cmd not in admin_task_options:
-                    res = input("Unknown command \n Press enter to continue.").lower()
-                elif admin_cmd == 'remove':
-                    actions.delete_recipie()
-                elif admin_cmd == 'reset':
-                    actions.reset_recipie_table()
 
         # Exit check
         if cmd == 'q' or res == 'q':

@@ -3,5 +3,6 @@
 *.pkl
 *.db
 *.ipynb
+*pyc
 __pycache__/
-__pycache__/*
+data/*
