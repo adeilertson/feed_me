@@ -35,12 +35,6 @@ After you're done adding ingredients, press 'Enter' again.
     """)
 
 
-def print_find_recipe_instructions():
-    print("""
-Enter recipe name or text for the name to contain and press 'Enter'.
-""")
-
-
 def print_menu():
     print("""
         Welcome to Feed Me!
@@ -52,17 +46,6 @@ def print_menu():
         - 'search' to search for a recipe based on ingredients
         - 'browse' to look through all recipes
         - 'add' to add a new recipie to the repository
-        - 'q' to exit
-        """)
-    
-
-def print_admin_menu():
-    print("""
-        Feed Me Database Admin Menu
-
-        Options:
-        - 'remove' to remove a recipie from the database by name
-        - 'reset' to reset the recipie table, deleting all stored recipie data
         - 'q' to exit
         """)
 

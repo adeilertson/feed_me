@@ -1,5 +1,4 @@
 from json.decoder import JSONDecodeError
-import random
 import requests
 import json
 from bs4 import BeautifulSoup
@@ -53,7 +52,6 @@ def new_recipe_builder(url, source):
         new_recipe['error'] = ''
 
     # Set recipe items
-
     # Set recipe name
     new_recipe['name'] = recipe_data['name']
     # Set recipe URL

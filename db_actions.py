@@ -3,9 +3,8 @@ Database Actions
 
 
 """
-from sqlalchemy import and_, or_, create_engine, MetaData, Table, select
-from sqlalchemy.sql import func
-from sqlalchemy.orm import sessionmaker, contains_eager, joinedload
+from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy.orm import sessionmaker, joinedload
 from sqlalchemy.exc import NoSuchTableError
 
 import file_handling
@@ -66,14 +65,6 @@ def add_recipe(new_recipe):
 
     # Close the session
     session.close()
-
-
-def recipes_delete(recipe):
-    pass
-
-
-def db_reset():
-    pass
 
 
 def get_session():
@@ -179,32 +170,4 @@ def run_recipe_query(recipe_name):
             .order_by(models.Recipe.recipe_name)
             .all()
         )
-    return recipes
-
-
-def run_single_ingredient_query(search_terms):
-    """
-    Search for recipes containing specified ingredients.
-
-    Args:
-        search_terms (list): A list of ingredient names to search for.
-
-    Returns:
-        list: A list of Recipe objects matching the criteria.
-    """
-    # Start session for the query
-    with get_session() as session:
-        # Build and run query
-        recipes = (
-            session.query(models.Recipe)
-            .join(models.ingredient_association)
-            .join(models.Ingredient)
-            .options(joinedload(models.Recipe.ingredients))  # Load all ingredients for recipes
-            .filter(or_(*[models.Ingredient.ingredient_name.ilike(f'%{term}%') for term in search_terms])) # Filter on search terms where an ingredient contains at least one search term
-            .group_by(models.Recipe.recipe_id)
-            .order_by(models.Recipe.recipe_name)
-            .all()
-        )
-
-
     return recipes
