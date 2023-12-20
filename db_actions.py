@@ -176,6 +176,7 @@ def run_recipe_query(recipe_name):
             .options(joinedload(models.Recipe.ingredients))  # Load all ingredients for recipes
             .join(models.ingredient_association)
             .filter(models.Recipe.recipe_name.ilike(f'%{recipe_name}%'))
+            .order_by(models.Recipe.recipe_name)
             .all()
         )
     return recipes
@@ -201,6 +202,7 @@ def run_single_ingredient_query(search_terms):
             .options(joinedload(models.Recipe.ingredients))  # Load all ingredients for recipes
             .filter(or_(*[models.Ingredient.ingredient_name.ilike(f'%{term}%') for term in search_terms])) # Filter on search terms where an ingredient contains at least one search term
             .group_by(models.Recipe.recipe_id)
+            .order_by(models.Recipe.recipe_name)
             .all()
         )
 
